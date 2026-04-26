@@ -1,3 +1,4 @@
+#pragma once
 #include <stdexcept>
 #include <memory>
 #include <utility>

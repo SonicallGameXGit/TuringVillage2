@@ -13,5 +13,14 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
             }
         }
+    ],
+    "buildPresets": [
+        {
+            "name": "Main",
+            "description": "",
+            "displayName": "",
+            "configurePreset": "Configure preset using toolchain file",
+            "jobs": 8
+        }
     ]
 }
