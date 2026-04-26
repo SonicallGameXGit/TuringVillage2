@@ -5,7 +5,7 @@
 #include <glad/glad.h>
 
 struct SDL {
-    SDL(SDL_InitFlags flags) {
+    explicit SDL(SDL_InitFlags flags) {
         if (!SDL_Init(flags)) {
             throw std::runtime_error("Failed to initialize SDL");
         }
@@ -23,7 +23,6 @@ public:
     explicit Resource(T handle) : handle(handle) {}
     ~Resource() {
         if (this->handle) {
-            printf("Deleting resource %p\n", reinterpret_cast<void*>(this->handle));
             Deleter(this->handle);
         }
     }
@@ -83,3 +82,14 @@ inline void GL_Deleter_Shader(GLuint shader) {
     glDeleteShader(shader);
 }
 using GL_Shader = Resource<GLuint, GL_Deleter_Shader>;
+
+// GL_Texture
+inline void GL_Deleter_Texture(GLuint texture) {
+    glDeleteTextures(1, &texture);
+}
+using GL_Texture = Resource<GLuint, GL_Deleter_Texture>;
+inline GL_Texture GL_CreateTexture() {
+    GLuint texture;
+    glGenTextures(1, &texture);
+    return GL_Texture(texture);
+}

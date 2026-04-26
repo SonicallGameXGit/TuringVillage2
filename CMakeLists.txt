@@ -5,13 +5,15 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(libs/SDL)
+add_subdirectory(libs/SDL_image)
 add_subdirectory(libs/GLAD)
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
 )
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3 GLAD)
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3 SDL3_image::SDL3_image GLAD)
 target_include_directories(${PROJECT_NAME} PRIVATE
     libs/SDL/include
+    libs/SDL_image/include
     libs/GLAD/include
 )
