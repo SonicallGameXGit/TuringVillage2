@@ -1,37 +1,5 @@
-#include "shader.hpp"
-
-void GL_Deleter_ShaderProgram(GLuint program) {
-    glDeleteProgram(program);
-}
-void GL_Deleter_Shader(GLuint shader) {
-    glDeleteShader(shader);
-}
-
-void compileShaderSource(GLuint shader, const GLchar *const *source) {
-    glShaderSource(shader, 1, source, nullptr);
-    glCompileShader(shader);
-    GLint success = 0;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-    if (success == GL_FALSE) {
-        GLint length = 0;
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
-        std::vector<GLchar> infoLog = std::vector<GLchar>(length);
-        glGetShaderInfoLog(shader, length, nullptr, infoLog.data());
-        throw std::runtime_error(std::string("Failed to compile shader: ") + infoLog.data());
-    }
-}
-void linkProgram(GLuint program) {
-    glLinkProgram(program);
-    GLint success = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &success);
-    if (success == GL_FALSE) {
-        GLint length = 0;
-        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
-        std::vector<GLchar> infoLog = std::vector<GLchar>(length);
-        glGetProgramInfoLog(program, length, nullptr, infoLog.data());
-        throw std::runtime_error(std::string("Failed to link shader program: ") + infoLog.data());
-    }
-}
+#include "quad.hpp"
+#include "helper.hpp"
 
 QuadShader::QuadShader() : shaderProgram(glCreateProgram()) {
     GL_Shader vertexShader = GL_Shader(glCreateShader(GL_VERTEX_SHADER));
@@ -72,6 +40,7 @@ QuadShader::QuadShader() : shaderProgram(glCreateProgram()) {
     glAttachShader(this->shaderProgram.get(), fragmentShader.get());
     linkProgram(this->shaderProgram.get());
 }
+QuadShader::~QuadShader() = default;
 
 void QuadShader::bind() const {
     glUseProgram(this->shaderProgram.get());
@@ -79,9 +48,9 @@ void QuadShader::bind() const {
 void QuadShader::setAspectRatio(float aspectRatio) const {
     glUniform1f(glGetUniformLocation(this->shaderProgram.get(), "u_AspectRatio"), aspectRatio);
 }
-void QuadShader::setCameraTransform(float x, float y, float zoom) const {
-    glUniform3f(glGetUniformLocation(this->shaderProgram.get(), "u_CameraTransform"), x, y, zoom);
+void QuadShader::setCamera(const Camera &camera) const {
+    glUniform3f(glGetUniformLocation(this->shaderProgram.get(), "u_CameraTransform"), camera.position.x, camera.position.y, camera.zoom);
 }
-void QuadShader::setTransform(float x, float y, float width, float height) const {
-    glUniform4f(glGetUniformLocation(this->shaderProgram.get(), "u_Transform"), x, y, width, height);
+void QuadShader::setTransform(const Vec2 &position, const Vec2 &size) const {
+    glUniform4f(glGetUniformLocation(this->shaderProgram.get(), "u_Transform"), position.x, position.y, size.x, size.y);
 }

@@ -19,5 +19,5 @@ public:
     Texture(const Texture&) = delete;
     Texture &operator=(const Texture&) = delete;
 
-    static Texture loadFromFile(const char *filename, GLenum filter);
+    static Texture loadFromFile(const char *filename, GLenum filter, GLenum wrap);
 };

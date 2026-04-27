@@ -1,6 +1,4 @@
 #pragma once
-#include <stdexcept>
-#include <memory>
 #include <utility>
 
 template <typename T, auto Deleter>

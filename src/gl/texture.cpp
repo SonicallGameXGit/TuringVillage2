@@ -1,5 +1,8 @@
 #include "texture.hpp"
 #include <SDL3_image/SDL_image.h>
+#include <stdexcept>
+#include <exception>
+#include <utility>
 
 void GL_Deleter_Texture(GLuint texture) {
     glDeleteTextures(1, &texture);
@@ -12,7 +15,7 @@ GL_Texture GL_CreateTexture() {
 }
 
 Texture::Texture(GL_Texture &&glTexture, uint32_t width, uint32_t height) : glTexture(std::move(glTexture)), width(width), height(height) {}
-Texture Texture::loadFromFile(const char *filename, GLenum filter) {
+Texture Texture::loadFromFile(const char *filename, GLenum filter, GLenum wrap) {
     SDL_Surface *surface = IMG_Load(filename);
     if (surface == nullptr) {
         throw std::runtime_error(std::string("Failed to load image: ") + SDL_GetError());
@@ -32,8 +35,8 @@ Texture Texture::loadFromFile(const char *filename, GLenum filter) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
     SDL_DestroySurface(surface);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
 

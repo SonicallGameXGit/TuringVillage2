@@ -8,7 +8,8 @@
 #include "maths.hpp"
 #include "window.hpp"
 #include "cursor.hpp"
-#include "gl/shader.hpp"
+#include "gl/shader/quad.hpp"
+#include "gl/shader/connection_line.hpp"
 #include "gl/buffer.hpp"
 #include "gl/texture.hpp"
 
@@ -52,19 +53,32 @@ void entry() {
     // buildEmptyTexture(emptyTexture.get());
 
     QuadShader quadShader = QuadShader();
+    ConnectionLineShader connectionLineShader = ConnectionLineShader();
 
-    Texture texture = Texture::loadFromFile("./assets/pidoras.png", GL_NEAREST);
+    Texture pidorasTexture = Texture::loadFromFile("./assets/pidoras.png", GL_NEAREST, GL_CLAMP_TO_EDGE);
+    Texture connectionLineTexture = Texture::loadFromFile("./assets/connection_line.png", GL_NEAREST, GL_REPEAT);
+
     QuadMesh quadMesh = QuadMesh();
 
     Camera camera = { .zoom = 0.01f };
     Cursor cursor = Cursor();
 
     std::vector<Villager> villagers = std::vector<Villager>();
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 15; i++) {
         Villager villager;
         villager.position.x = static_cast<float>(rand() % 2000 - 1000) / 10.0f; // -10.0f to 10.0f
         villager.position.y = static_cast<float>(rand() % 2000 - 1000) / 10.0f; // -10.0f to 10.0f
         villagers.push_back(villager);
+    }
+    for (size_t i = 0; i < villagers.size(); i++) {
+        Villager &villager = villagers[i];
+        if (rand() % 100 < 30) {
+            size_t coworkerId = rand() % villagers.size();
+            while (coworkerId == i) {
+                coworkerId = rand() % villagers.size();
+            }
+            villager.coworkersIds.push_back(coworkerId);
+        }
     }
 
     bool running = true;
@@ -92,18 +106,36 @@ void entry() {
 
         float aspectRatio = static_cast<float>(windowWidth) / static_cast<float>(windowHeight);
 
+        connectionLineShader.bind();
+        connectionLineShader.setAspectRatio(aspectRatio);
+        connectionLineShader.setCamera(camera);
+        connectionLineShader.setWidth(3.0f);
+        connectionLineShader.setTime(SDL_GetTicks() / 1000.0f);
+
+        glBindTexture(GL_TEXTURE_2D, connectionLineTexture.glTexture.get());
+        for (const Villager &villager : villagers) {
+            for (uint32_t coworkerId : villager.coworkersIds) {
+                const Villager &coworker = villagers[coworkerId]; // FIXME: It often can cause undefined behavior because of villagers dying, spawning, removing, etc. It should be handled somehow (e.g. Restrict access to all fields in the structure and give hepler functions that'd help to handle everything correctly, + create some villager manager class)
+                connectionLineShader.setPoints(
+                    Vec2 { .x = villager.position.x + pidorasTexture.width / 2.0f, .y = villager.position.y + pidorasTexture.height / 2.0f },
+                    Vec2 { .x = coworker.position.x + pidorasTexture.width / 2.0f, .y = coworker.position.y + pidorasTexture.height / 2.0f }
+                );
+                quadMesh.draw();
+            }
+        }
+
         quadShader.bind();
         quadShader.setAspectRatio(aspectRatio);
-        quadShader.setCameraTransform(camera.position.x, camera.position.y, camera.zoom);
+        quadShader.setCamera(camera);
 
         for (size_t i = 0; i < villagers.size(); i++) {
             const Villager &villager = villagers[i];
 
-            glBindTexture(GL_TEXTURE_2D, texture.glTexture.get());
-            quadShader.setTransform(villager.position.x, villager.position.y, static_cast<float>(texture.width), static_cast<float>(texture.height));
+            glBindTexture(GL_TEXTURE_2D, pidorasTexture.glTexture.get());
+            quadShader.setTransform(villager.position, Vec2 { .x = static_cast<float>(pidorasTexture.width), .y = static_cast<float>(pidorasTexture.height) });
             quadMesh.draw();
 
-            if (cursor.getX() >= villager.position.x && cursor.getX() <= villager.position.x + texture.width && cursor.getY() >= villager.position.y && cursor.getY() <= villager.position.y + texture.height) {
+            if (cursor.getX() >= villager.position.x && cursor.getX() <= villager.position.x + pidorasTexture.width && cursor.getY() >= villager.position.y && cursor.getY() <= villager.position.y + pidorasTexture.height) {
                 printf("Mouse is hovering over villager (%zu) at coordinates: %f, %f\n", i, villager.position.x, villager.position.y);
             }
         }

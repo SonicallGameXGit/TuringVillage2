@@ -10,12 +10,15 @@ add_subdirectory(libs/GLAD)
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
-    src/gl/shader.cpp
     src/gl/buffer.cpp
     src/gl/texture.cpp
     src/villager.cpp
     src/cursor.cpp
     src/window.cpp
+    src/gl/shader/core.cpp
+    src/gl/shader/helper.cpp
+    src/gl/shader/quad.cpp
+    src/gl/shader/connection_line.cpp
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3 SDL3_image::SDL3_image GLAD)
 target_include_directories(${PROJECT_NAME} PRIVATE
