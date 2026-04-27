@@ -1,11 +1,12 @@
 #pragma once
 #include <vector>
 #include <cstdint>
+#include "maths.hpp"
 
 struct Villager {
-    float x = 0.0f, y = 0.0f;
+    Vec2 position = {};
     std::vector<uint32_t> coworkersIds = std::vector<uint32_t>();
 
-    Villager() = default;
-    ~Villager() = default;
+    Villager();
+    ~Villager();
 };
