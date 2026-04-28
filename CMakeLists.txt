@@ -19,6 +19,7 @@ add_executable(${PROJECT_NAME}
     src/gl/shader/helper.cpp
     src/gl/shader/quad.cpp
     src/gl/shader/connection_line.cpp
+    src/village.cpp
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3 SDL3_image::SDL3_image GLAD)
 target_include_directories(${PROJECT_NAME} PRIVATE

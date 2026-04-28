@@ -18,6 +18,25 @@ void Cursor::update(const Vec2 &windowSize, const Camera &camera) {
     this->position.y /= camera.zoom;
     this->position.x += camera.position.x;
     this->position.y += camera.position.y;
+
+    this->currentFrame++;
+    if (this->currentFrame == 0) {
+        this->currentFrame = 1;
+    }
+    if (SDL_GetGlobalMouseState(nullptr, nullptr) & SDL_BUTTON_LMASK) {
+        if (this->leftClickFrame == 0) {
+            this->leftClickFrame = this->currentFrame;
+        }
+    } else {
+        this->leftClickFrame = 0;
+    }
+    if (SDL_GetGlobalMouseState(nullptr, nullptr) & SDL_BUTTON_RMASK) {
+        if (this->rightClickFrame == 0) {
+            this->rightClickFrame = this->currentFrame;
+        }
+    } else {
+        this->rightClickFrame = 0;
+    }
 }
 
 float Cursor::getX() const {
@@ -28,4 +47,17 @@ float Cursor::getY() const {
 }
 const Vec2 &Cursor::getPosition() const {
     return this->position;
+}
+
+bool Cursor::isLeftPressed() const {
+    return this->leftClickFrame != 0;
+}
+bool Cursor::isLeftJustPressed() const {
+    return this->leftClickFrame == this->currentFrame;
+}
+bool Cursor::isRightPressed() const {
+    return this->rightClickFrame != 0;
+}
+bool Cursor::isRightJustPressed() const {
+    return this->rightClickFrame == this->currentFrame;
 }
