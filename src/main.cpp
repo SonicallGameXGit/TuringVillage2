@@ -85,6 +85,7 @@ void entry() {
     std::pair<Vec2, Villager*> draggingVillager = std::make_pair(Vec2 {}, nullptr);
     std::pair<std::optional<size_t>, std::optional<size_t>> draggingConnection = std::make_pair(std::nullopt, std::nullopt);
     float nearestVillagerToDrag = std::numeric_limits<float>::max();
+    float nearestVillagerToConnect = std::numeric_limits<float>::max();
 
     Uint64 lastTime = SDL_GetTicksNS();
     float deltaTime = 0.0f;
@@ -165,7 +166,14 @@ void entry() {
                 cursor.getY() >= villager.position.y && cursor.getY() <= villager.position.y + pidorasTexture.height
             ) {
                 if (cursor.isRightJustPressed()) {
-                    draggingConnection.first.emplace(i);
+                    float distance = std::hypotf(
+                        cursor.getX() - (villager.position.x + pidorasTexture.width / 2.0f),
+                        cursor.getY() - (villager.position.y + pidorasTexture.height / 2.0f)
+                    );
+                    if (distance < nearestVillagerToConnect) {
+                        nearestVillagerToConnect = distance;
+                        draggingConnection.first.emplace(i);
+                    }
                     return;
                 }
                 if (draggingConnection.first.has_value() && draggingConnection.first.value() != i) {
@@ -195,6 +203,7 @@ void entry() {
         if (!cursor.isRightPressed()) {
             draggingConnection.first.reset();
             draggingConnection.second.reset();
+            nearestVillagerToConnect = std::numeric_limits<float>::max();
         }
         if (draggingVillager.second != nullptr) {
             draggingVillager.second->position.x = cursor.getX() + draggingVillager.first.x;
